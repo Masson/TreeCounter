@@ -115,6 +115,14 @@ public final class CountNode {
         return children.length == 0;
     }
 
+    public final int getDepth() {
+        if (getParent() != null){
+            return getParent().getDepth() + 1;
+        } else {
+            return 0;
+        }
+    }
+
     /**
      * 遍历以此节点为根的整棵树的每个节点，分支节点和叶子节点，但不包括自己
      * @param handler 节点处理器
@@ -204,5 +212,21 @@ public final class CountNode {
         }
 
         return hasRemoved;
+    }
+
+    public String getDebugInfo() {
+        return id
+                + " " + String.valueOf(getDisplayCount())
+                + " (" + String.valueOf(count) + ")"
+                + " [" + (
+                    getTouchNodePolicy() == TreeCounter.BypassPolicy ? "BypassPolicy" :
+                    getTouchNodePolicy() == TreeCounter.DoNothingPolicy ? "DoNothingPolicy" :
+                    getTouchNodePolicy() == TreeCounter.ZeroSelfPolicy ? "ZeroSelfPolicy" :
+                    getTouchNodePolicy() == TreeCounter.ZeroDescendantPolicy ? "ZeroDescendantPolicy" : "CustomPolicy"
+                    )
+                + "]"
+                + (isBypassed() ? "[Bypassed]" : "")
+                + (isLeaf() ? "[Leaf]" : "[Children: " + children.length + "]")
+                ;
     }
 }

@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -126,6 +128,19 @@ public class TreeCounter {
 
         // TODO 改为局部刷新，提高性能
         reload();
+    }
+
+    public List<CountNode> generateCountNodeList() {
+        final List<CountNode> list = new ArrayList<>();
+        list.add(mRootNode);
+        mRootNode.iterateDescendant(new CountNodeHandler() {
+            @Override
+            public boolean handleCountNode(@NonNull CountNode node) {
+                list.add(node);
+                return false;
+            }
+        });
+        return list;
     }
 
     @Nullable
@@ -315,6 +330,33 @@ public class TreeCounter {
             return mPreferenceHandler.getBooleanConfigValue(id);
         }
         return false;
+    }
+
+    public void reset() {
+        OnNodeUnreadCountChangeListener listener = mListener;
+        mListener = null;
+        mRootNode.iterateDescendant(new CountNodeHandler() {
+            @Override
+            public boolean handleCountNode(@NonNull CountNode node) {
+                if (node.isLeaf()) {
+                    applyCount(node, 0, false);
+                }
+                return false;
+            }
+        });
+        mListener = listener;
+        mRootNode.iterateDescendant(new CountNodeHandler() {
+            @Override
+            public boolean handleCountNode(@NonNull CountNode node) {
+                if (mListener != null) {
+                    mListener.onNodeUnreadCountChanged(node);
+                }
+                return false;
+            }
+        });
+        if (mListener != null) {
+            mListener.onNodeUnreadCountChanged(mRootNode);
+        }
     }
 
 
